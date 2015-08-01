@@ -1,0 +1,23 @@
+---
+-- blog schema
+---
+CREATE TABLE IF NOT EXISTS categories
+(
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    uri TEXT UNIQUE NOT NULL,
+    ctime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+
+INSERT INTO categories (name, uri) VALUES ('default', 'default');
+
+CREATE TABLE IF NOT EXISTS posts
+(
+    id SERIAL PRIMARY KEY,
+    category_id INTEGER NOT NULL REFERENCES categories (id) ON DELETE SET NULL,
+    title TEXT NOT NULL,
+    uri TEXT NOT NULL,
+    content TEXT NOT NULL,
+    ctime TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    mtime TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+)
