@@ -17,7 +17,7 @@
 
     <div class="row">
       <div class="small-12 columns">
-        <form method="post" action="/login">
+        <form method="post" action="/login/submit">
           <div class="row">
             <div class="small-8 small-centered columns">
               <div class="row">

@@ -67,10 +67,14 @@ def admin():
 @view('login')
 def login():
     if request.environ['session'].get('user') is not None:
-        request.redirect('/admin')
+        redirect('/admin', httplib.FOUND)
     return {'title': 'Admin Login'}
 
 
-@App.post('/login')
+@App.post('/login/submit')
 def login_submit():
-    pass
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+    print(username)
+    print(password)
+    redirect('/login', httplib.FOUND)
