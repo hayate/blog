@@ -8,6 +8,7 @@ class Session(object):
         self.data = {}
 
     def __setitem__(self, key, value):
+        print("setting key: {0} to value: {1}".format(key, value))
         self.data[key] = value
 
     def __getitem__(self, key):

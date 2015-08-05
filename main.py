@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from libs.blog import App
-from libs.bottle import run
+from libs.blog import AccountHandler
+from wsgiref.simple_server import make_server
 
-run(App, host='localhost', port=8080, debug=True, reloader=True)
+App.add_route('/', AccountHandler())
+httpd = make_server('localhost', 8080, App)
+httpd.serve_forever()
