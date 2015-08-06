@@ -6,12 +6,42 @@ import json
 import redis
 import falcon
 import httplib
-from Cookie import SimpleCookie
-from wsgisession import Session
 from falcon.request import Request
 from falcon.response import Response
 from falcon import DEFAULT_MEDIA_TYPE
-from wsgisession import SessionMiddleware
+
+
+class Session(object):
+    def __init__(self):
+        self.id = None
+        self.data = {}
+
+    def __setitem__(self, key, value):
+        self.data[key] = value
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __delitem__(self, key):
+        try:
+            del self.data[key]
+        except KeyError:
+            pass
+
+    def __contains__(self, key):
+        return key in self.data
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def get(self, key, default=None):
+        try:
+            return self.data[key]
+        except KeyError:
+            return default
 
 
 class RedisSessionFactory(object):
@@ -60,34 +90,24 @@ class SessionMiddleware(object):
         self.cookie_key = cookie_key
 
     def process_request(self, req, resp):
-        cookie = SimpleCookie()
-        if 'HTTP_COOKIE' in req.env:
-            cookie.load(req.env['HTTP_COOKIE'])
         id = None
-        if self.cookie_key in cookie:
-            id = cookie[self.cookie_key].value
+        print(req.cookies)
+        if self.cookie_key in req.cookies:
+            id = req.cookies[self.cookie_key]
         req.env[self.env_key] = self.factory.load(id)
-        print(req.env[self.env_key].data)
-        print('proces_request')
 
     def process_resource(self, req, resp, resource):
-        # id = None
-        # print(req.cookies)
-        # if self.cookie_key in req.cookies:
-        #     id = req.cookies[self.cookie_key]
-        # req.env[self.env_key] = self.factory.load(id)
-        print('process_resource')
+        pass
 
     def process_response(self, req, resp, resource):
-        print('saving value')
-        print(req.env[self.env_key].id, req.env[self.env_key].data)
         id = self.factory.save(req.env[self.env_key])
         resp.set_cookie(self.cookie_key, id, path='/', secure=False)
-        print('process_response')
 
 
 App = falcon.API(middleware=[StripSlashMiddleware(),
-                             SessionMiddleware(RedisSessionFactory(), 'session')])
+                             SessionMiddleware(RedisSessionFactory(),
+                                               'session')])
+
 
 class AccountHandler(object):
     def on_get(self, req, resp):
