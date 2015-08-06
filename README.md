@@ -1,3 +1,3 @@
 # blog
-### A very simple and fast python [falcon](http://falconframework.org/) based blog platform
+### A fast and simple blog platform
 (work in progress...)
