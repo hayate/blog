@@ -1,14 +1,27 @@
 # -*- coding: utf-8 -*-
 
-import os
 import uuid
 import json
 import redis
 import falcon
-import httplib
-from falcon.request import Request
-from falcon.response import Response
-from falcon import DEFAULT_MEDIA_TYPE
+import ConfigParser
+
+
+class Config(object):
+    __state = {}
+
+    def __init__(self, fp=None):
+        """ application wide config object
+        fp -- file or file-like object
+        """
+        self.__dict__ = self.__state
+        if 'config' not in self.__dict__:
+            self.config = ConfigParser.SafeConfigParser()
+            if fp:
+                self.config.readfp(fp)
+
+    def __getattr__(self, name):
+        return self.config[name]
 
 
 class Session(object):
@@ -91,7 +104,6 @@ class SessionMiddleware(object):
 
     def process_request(self, req, resp):
         id = None
-        print(req.cookies)
         if self.cookie_key in req.cookies:
             id = req.cookies[self.cookie_key]
         req.env[self.env_key] = self.factory.load(id)
@@ -104,22 +116,38 @@ class SessionMiddleware(object):
         resp.set_cookie(self.cookie_key, id, path='/', secure=False)
 
 
+class AuthMiddleware(object):
+    def process_request(self, req, resp):
+        if req.path.startswith('/admin'):
+            if req.env['session'].get('user') is None:
+                resp.status = falcon.HTTP_302
+                resp.location = '/account/login'
+
+    def process_resource(self, req, resp, resource):
+        pass
+
+    def process_response(self, req, resp, resource):
+        pass
+
+
 App = falcon.API(middleware=[StripSlashMiddleware(),
                              SessionMiddleware(RedisSessionFactory(),
-                                               'session')])
+                                               'session'),
+                             AuthMiddleware()])
 
 
 class AccountHandler(object):
+    def on_post(self, req, resp):
+        username = req.get_param('username', True)
+        password = req.get_param('password', True)
+
     def on_get(self, req, resp):
-        print(req.cookies)
-        if 'count' not in req.env['session']:
-            print('initializing value')
-            req.env['session']['count'] = 0
-        else:
-            print('setting value')
-            req.env['session']['count'] += 1
-        print(req.env['session']['count'])
-        resp.body = 'Hello Blog!'
+        return req.options.view.render('login.tpl', {'title': 'Admin Login'})
+
+
+class AdminHandler(object):
+    def on_get(self, req, resp):
+        pass
 
 # @App.get('/admin')
 # def admin():

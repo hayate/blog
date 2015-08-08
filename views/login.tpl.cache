@@ -1,9 +1,11 @@
-<!doctype html>
+timestamp: 1439035312.69
+
+_extend=_buf.extend;_to_str=to_str;_escape=escape; _extend(('''<!doctype html>
 <html class="no-js" lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${title}</title>
+    <title>''', _escape(_to_str(title)), '''</title>
     <link rel="stylesheet" href="/assets/foundation/css/foundation.css" />
     <script src="/assets/foundation/js/vendor/modernizr.js"></script>
   </head>
@@ -66,4 +68,4 @@
       $(document).foundation();
     </script>
   </body>
-</html>
+</html>\n''', ));

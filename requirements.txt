@@ -2,4 +2,5 @@ falcon==0.3.0
 python-mimeparse==0.1.4
 redis==2.10.3
 six==1.9.0
+Tenjin==1.1.1
 wheel==0.24.0
