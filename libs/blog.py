@@ -5,6 +5,7 @@ import json
 import redis
 import falcon
 import ConfigParser
+from tenjin.helpers import *
 
 
 class Config(object):
@@ -130,7 +131,8 @@ class AuthMiddleware(object):
         pass
 
 
-App = falcon.API(middleware=[StripSlashMiddleware(),
+App = falcon.API(media_type='text/html; charset=utf-8',
+                 middleware=[StripSlashMiddleware(),
                              SessionMiddleware(RedisSessionFactory(),
                                                'session'),
                              AuthMiddleware()])
@@ -142,7 +144,8 @@ class AccountHandler(object):
         password = req.get_param('password', True)
 
     def on_get(self, req, resp):
-        return req.options.view.render('login.tpl', {'title': 'Admin Login'})
+        resp.body = req.options.view.render('login.tpl',
+                                            {'title': 'Admin Login'})
 
 
 class AdminHandler(object):

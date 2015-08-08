@@ -6,7 +6,6 @@ import tenjin
 import falcon
 from libs.blog import App
 from libs.blog import Config
-from tenjin.helpers import *
 from libs.blog import AdminHandler
 from libs.blog import AccountHandler
 from wsgiref.simple_server import make_server
