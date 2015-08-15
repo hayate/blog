@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import os
 import uuid
 import json
 import redis
 import falcon
+import hashlib
 import ConfigParser
 from tenjin.helpers import *
 
@@ -28,7 +30,7 @@ class Config(object):
 class Session(object):
     def __init__(self):
         self.id = None
-        self.data = {}
+        self.data = {'__flash': {}}
 
     def __setitem__(self, key, value):
         self.data[key] = value
@@ -56,6 +58,12 @@ class Session(object):
             return self.data[key]
         except KeyError:
             return default
+
+    def set_flashdata(self, key, value):
+        self.data['__flash'][key] = value
+
+    def get_flashdata(self, key, default=None):
+        return self.data['__flash'].pop(key, default)
 
 
 class RedisSessionFactory(object):
@@ -140,17 +148,37 @@ App = falcon.API(media_type='text/html; charset=utf-8',
 
 class AccountHandler(object):
     def on_post(self, req, resp):
+        if req.env['session'].get('user') is not None:
+            resp.status = falcon.HTTP_302
+            resp.location = '/admin'
+            return
         username = req.get_param('username', True)
         password = req.get_param('password', True)
+        h = hashlib.sha256("{0}:{1}".format(username, password))
+        if os.getenv('SECRET_PASSWORD') != h.hexdigest():
+            req.env['session'].set_flashdata('error', 'Invalid Login Details')
+            resp.status = falcon.HTTP_302
+            resp.location = '/account/login'
+            return
+        req.env['session']['user'] = username
+        resp.status = falcon.HTTP_302
+        resp.location = '/admin'
 
     def on_get(self, req, resp):
-        resp.body = req.options.view.render('login.tpl',
-                                            {'title': 'Admin Login'})
+        if req.env['session'].get('user') is not None:
+            resp.status = falcon.HTTP_302
+            resp.location = '/admin'
+            return
+        error = req.env['session'].get_flashdata('error')
+        resp.body = req.options.view.render('login.html',
+                                            {'title': 'Admin Login',
+                                             'error': error})
 
 
 class AdminHandler(object):
     def on_get(self, req, resp):
-        pass
+        print('i am here!')
+        resp.body = req.options.view.render('admin/admin.html')
 
 # @App.get('/admin')
 # def admin():

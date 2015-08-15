@@ -38,9 +38,9 @@ if __name__ == '__main__':
     # initialize template engine
     view = tenjin.Engine(path=['views'])
 
-    App.add_route('/account/login', AccountHandler())
     App.req_options = Context()
     App.req_options.view = view
+    App.add_route('/account/login', AccountHandler())
     App.add_route('/admin', AdminHandler())
     httpd = make_server('localhost', 8080, App)
     httpd.serve_forever()
